@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - موّن</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'ui-sans-serif', 'system-ui']
+                    },
+                    colors: {
+                        brand: {
+                            50:  '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Navbar glass effect */
+        .navbar-glass {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(238,242,255,0.95) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        /* Active nav pill */
+        .nav-link-active {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+        }
+
+        /* Dropdown animation */
+        .dropdown-enter { animation: dropIn 0.18s ease; }
+        @@keyframes dropIn {
+            from { opacity: 0; transform: translateY(-8px) scaleY(0.96); }
+            to   { opacity: 1; transform: translateY(0) scaleY(1); }
+        }
+
+        /* Logo shimmer */
+        .logo-shimmer {
+            background: linear-gradient(135deg, #4f46e5 0%, #818cf8 50%, #4f46e5 100%);
+            background-size: 200% 200%;
+            animation: shimmer 3s ease infinite;
+        }
+        @@keyframes shimmer {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/moa.styles.css" asp-append-version="true" />
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased" x-data="{ mobileMenuOpen: false }">
+
+@{
+    var ctrl = (ViewContext?.RouteData?.Values?["controller"]?.ToString() ?? "").ToLowerInvariant();
+    var act  = (ViewContext?.RouteData?.Values?["action"]?.ToString()  ?? "").ToLowerInvariant();
+
+    Func<string, string> hClass = (controller) =>
+        ctrl == controller.ToLowerInvariant()
+            ? "nav-link-active flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition-all"
+            : "flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-all";
+
+    Func<string, string, string> hClassAction = (controller, action) =>
+        ctrl == controller.ToLowerInvariant() && act == action.ToLowerInvariant()
+            ? "nav-link-active flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition-all"
+            : "flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-all";
+}
+
+<div class="min-h-screen flex flex-col">
+
+    <header class="navbar-glass sticky top-0 z-50 border-b border-indigo-100/60 shadow-sm">
+        <div class="mx-auto max-w-7xl px-4">
+            <div class="flex h-16 items-center justify-between gap-4">
+                
+                <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2.5 select-none shrink-0">
+                    <span class="logo-shimmer inline-flex h-9 w-9 items-center justify-center rounded-xl text-white text-base font-bold shadow-md">
+                        م
+                    </span>
+                    <span class="text-xl font-extrabold tracking-tight text-slate-800">موّن</span>
+                </a>
+
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <nav class="hidden md:flex items-center gap-1 flex-1 justify-center" aria-label="التنقل الرئيسي">
+                        <a class="@hClassAction("home","index")" asp-controller="Home" asp-action="Index">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                            الرئيسية
+                        </a>
+
+                        <div class="relative" x-data="{ open: false }">
+                            <button type="button" class="@(ctrl is "receipts" or "freesales" ? "nav-link-active" : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700") flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition-all"
+                                    x-on:click="open = !open" x-on:click.outside="open = false">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M7 7h10M7 11h10M7 15h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6 3h12a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                                السحوبات
+                                <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="open && 'rotate-180'" viewBox="0 0 24 24" fill="currentColor"><path d="M5.25 8.625 12 15.375l6.75-6.75" /></svg>
+                            </button>
+                            <div x-cloak x-show="open" class="dropdown-enter absolute top-full mt-2 w-52 right-0 rounded-2xl border border-indigo-100 bg-white p-2 shadow-xl ring-1 ring-indigo-50 z-50">
+                                <a class="@hClassAction("receipts","create") w-full" asp-controller="Receipts" asp-action="Create">سحب نقاط</a>
+                                <a class="@hClassAction("freesales","create") w-full mt-1" asp-controller="FreeSales" asp-action="Create">بيع حر</a>
+                                <a class="@hClassAction("freesales","index") w-full mt-1" asp-controller="FreeSales" asp-action="Index">قائمة البيع الحر</a>
+                            </div>
+                        </div>
+
+                        <div class="relative" x-data="{ open: false }">
+                            <button type="button" class="@(ctrl is "cards" or "cardgroups" ? "nav-link-active" : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700") flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition-all"
+                                    x-on:click="open = !open" x-on:click.outside="open = false">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0.001-8.001A4 4 0 0 0 12 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                البطاقات
+                                <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="open && 'rotate-180'" viewBox="0 0 24 24" fill="currentColor"><path d="M5.25 8.625 12 15.375l6.75-6.75" /></svg>
+                            </button>
+                            <div x-cloak x-show="open" class="dropdown-enter absolute top-full mt-2 w-52 right-0 rounded-2xl border border-indigo-100 bg-white p-2 shadow-xl ring-1 ring-indigo-50 z-50">
+                                <a class="@hClassAction("cards","search") w-full" asp-controller="Cards" asp-action="Search">بحث وتعديل</a>
+                                <a class="@hClassAction("cards","create") w-full mt-1" asp-controller="Cards" asp-action="Create">إضافة بطاقة</a>
+                                <div class="my-1.5 h-px bg-slate-100"></div>
+                                <a class="@hClass("cardgroups") w-full" asp-controller="CardGroups" asp-action="Index">مجموعات البطاقات</a>
+                            </div>
+                        </div>
+
+                        <a class="@hClass("logs")" asp-controller="Logs" asp-action="Index" asp-route-Tab="@moa.Models.UiTabs.Withdrawals">السجل</a>
+                        <a class="@hClass("products")" asp-controller="Products" asp-action="Index">السلع</a>
+                    </nav>
+
+                    <div class="flex items-center gap-2 shrink-0" x-data="{ open: false }">
+                        <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-indigo-50 transition-colors"
+                                x-on:click="open = !open" x-on:click.outside="open = false">
+                            <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 text-xs font-bold">
+                                @(User.Identity.Name?.Length > 0 ? User.Identity.Name[0].ToString().ToUpper() : "U")
+                            </span>
+                            <span class="hidden sm:block">@User.Identity.Name</span>
+                        </button>
+                        <div x-cloak x-show="open" class="dropdown-enter absolute left-4 top-16 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50">
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-right text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-colors">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    تسجيل الخروج
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 mx-auto w-full max-w-7xl px-4 py-6 pb-24 md:pb-8">
+        @RenderBody()
+    </main>
+
+    @if (User?.Identity?.IsAuthenticated == true)
+    {
+        <nav class="fixed bottom-4 left-4 right-4 z-50 md:hidden overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 shadow-xl" aria-label="التنقل السفلي">
+            <div class="flex items-center justify-around px-2 py-2">
+                <a asp-controller="Home" asp-action="Index" class="flex flex-col items-center gap-1 rounded-2xl p-2 transition-colors @(ctrl == "home" ? "bg-white/20 text-white" : "text-indigo-100")">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M2.25 12l8.95-8.95a1.5 1.5 0 0 1 2.1 0L22.25 12M4.5 9.75v10.5a.75.75 0 0 0 .75.75h4.5a.75.75 0 0 0 .75-.75v-6h3v6a.75.75 0 0 0 .75.75h4.5a.75.75 0 0 0 .75-.75V9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="text-[10px] font-semibold">الرئيسية</span>
+                </a>
+                <a asp-controller="Receipts" asp-action="Create" class="flex flex-col items-center gap-1 rounded-2xl p-2 transition-colors @(ctrl == "receipts" ? "bg-white/20 text-white" : "text-indigo-100")">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M7 7h10M7 11h10M7 15h6M6 3h12a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="text-[10px] font-semibold">سحب</span>
+                </a>
+                <a asp-controller="Cards" asp-action="Search" class="flex flex-col items-center gap-1 rounded-2xl p-2 transition-colors @(ctrl == "cards" ? "bg-white/20 text-white" : "text-indigo-100")">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M10 10a4 4 0 1 0 0.001-8.001A4 4 0 0 0 10 10Z" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-5.2-5.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <span class="text-[10px] font-semibold">بحث</span>
+                </a>
+                <a asp-controller="Logs" asp-action="Index" asp-route-Tab="@moa.Models.UiTabs.Withdrawals" class="flex flex-col items-center gap-1 rounded-2xl p-2 transition-colors @(ctrl == "logs" ? "bg-white/20 text-white" : "text-indigo-100")">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 6h1M3 12h1M3 18h1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <span class="text-[10px] font-semibold">السجل</span>
+                </a>
+                <button type="button" x-on:click="mobileMenuOpen = true" class="flex flex-col items-center gap-1 rounded-2xl p-2 transition-colors text-indigo-100">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="text-[10px] font-semibold">المزيد</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile More Menu Overlay -->
+        <div x-cloak x-show="mobileMenuOpen" class="fixed inset-0 z-[100] md:hidden">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" x-on:click="mobileMenuOpen = false"></div>
+            <div class="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-6 shadow-2xl transition-transform duration-300 transform" 
+                 x-show="mobileMenuOpen" x-transition:enter="translate-y-0" x-transition:leave="translate-y-full">
+                <div class="mb-6 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-800">القائمة</h3>
+                    <button x-on:click="mobileMenuOpen = false" class="rounded-full bg-slate-100 p-2 text-slate-400"><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg></button>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pb-8">
+                    <a class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 font-semibold text-slate-700" asp-controller="CardGroups" asp-action="Index" x-on:click="mobileMenuOpen = false">المجموعات</a>
+                    <a class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 font-semibold text-slate-700" asp-controller="Products" asp-action="Index" x-on:click="mobileMenuOpen = false">السلع</a>
+                    <a class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 font-semibold text-slate-700" asp-controller="Prices" asp-action="Index" x-on:click="mobileMenuOpen = false">الأسعار</a>
+                    <a class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 font-semibold text-slate-700" asp-controller="MonthlyBalances" asp-action="Index" x-on:click="mobileMenuOpen = false">الأرصدة</a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <footer class="border-t border-slate-200/70 bg-white">
+        <div class="mx-auto max-w-7xl px-4 py-5 flex items-center justify-between text-sm text-slate-400">
+            <span>&copy; 1447 موّن — جميع الحقوق محفوظة</span>
+            <span class="inline-flex items-center gap-1.5">
+                <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                متصل
+            </span>
+        </div>
+    </footer>
+
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

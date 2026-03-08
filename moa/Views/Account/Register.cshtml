@@ -1,0 +1,61 @@
+@model moa.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "حساب جديد";
+}
+
+<div class="mx-auto max-w-md">
+    <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-indigo-600 via-fuchsia-600 to-rose-500"></div>
+        <div class="p-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold">إنشاء حساب</h1>
+                <p class="mt-1 text-sm text-slate-500">سجّل بيانات المحل عشان يبدأ النظام يشتغل.</p>
+            </div>
+
+            <form asp-action="Register" method="post" class="space-y-4">
+                <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+                <div>
+                    <label asp-for="OwnerName" class="mb-1 block text-sm font-semibold text-slate-700">اسم صاحب المحل</label>
+                    <input asp-for="OwnerName" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="OwnerName" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="StoreName" class="mb-1 block text-sm font-semibold text-slate-700">اسم المحل</label>
+                    <input asp-for="StoreName" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="StoreName" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Email" class="mb-1 block text-sm font-semibold text-slate-700">البريد الإلكتروني</label>
+                    <input asp-for="Email" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="Email" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Password" class="mb-1 block text-sm font-semibold text-slate-700">كلمة المرور</label>
+                    <input asp-for="Password" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="Password" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="ConfirmPassword" class="mb-1 block text-sm font-semibold text-slate-700">تأكيد كلمة المرور</label>
+                    <input asp-for="ConfirmPassword" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="ConfirmPassword" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <button type="submit" class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">إنشاء الحساب</button>
+            </form>
+
+            <div class="mt-6 text-sm text-slate-600">
+                لديك حساب بالفعل؟
+                <a class="font-semibold text-indigo-700 hover:underline" asp-controller="Account" asp-action="Login">تسجيل الدخول</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

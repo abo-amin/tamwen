@@ -1,0 +1,146 @@
+@model moa.Models.PrintMonthlyViewModel
+@using System.Globalization
+@{
+    Layout = null;
+    ViewData["Title"] = "جرد الشهر";
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - @Model.StoreName</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Cairo','ui-sans-serif','system-ui'] } } } };
+    </script>
+    <style>
+        @@media print {
+            .no-print { display:none !important; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-900">
+<div class="mx-auto max-w-6xl p-6">
+    <div class="no-print mb-4 flex items-center justify-between">
+        <a class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" href="javascript:window.close()">إغلاق</a>
+        <button class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700" onclick="window.print()">طباعة</button>
+    </div>
+
+    <div class="mb-6 rounded-2xl border border-slate-200 p-4">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <div class="text-lg font-bold">جرد سحوبات الشهر</div>
+                <div class="mt-1 text-sm text-slate-600">المحل: <span class="font-semibold">@Model.StoreName</span></div>
+            </div>
+            <div class="text-sm">
+                <div class="text-slate-600">الشهر</div>
+                @{
+                    var ym = Model.YearMonth;
+                    var monthDate = new DateTime(ym / 100, ym % 100, 1);
+                    var monthLabel = monthDate.ToString("MMMM yyyy", new CultureInfo("ar-EG"));
+                    var monthLabelNumeric = monthDate.ToString("MM/yyyy");
+                }
+                <div class="font-bold">@monthLabel</div>
+                <div class="font-mono text-xs text-slate-500">@monthLabelNumeric</div>
+            </div>
+        </div>
+    </div>
+
+    @{
+        var receiptsByCard = Model.Receipts.GroupBy(r => r.CardId).ToDictionary(g => g.Key, g => g.OrderBy(r => r.WithdrawnAt).ToList());
+        var linesByReceipt = Model.Lines.GroupBy(l => l.ReceiptId).ToDictionary(g => g.Key, g => g.ToList());
+        var cardsByGroup = Model.Cards.GroupBy(c => c.GroupName).OrderBy(g => g.Key).ToList();
+    }
+
+    @foreach (var grp in cardsByGroup)
+    {
+        <div class="mb-6 break-inside-avoid">
+            <div class="mb-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white">@grp.Key</div>
+
+            <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-700">
+                    <tr>
+                        <th class="px-4 py-3 text-right font-semibold">العميل</th>
+                        <th class="px-4 py-3 text-right font-semibold">رقم البطاقة</th>
+                        <th class="px-4 py-3 text-right font-semibold">التليفون</th>
+                        <th class="px-4 py-3 text-right font-semibold">المنصرف (المنتج: الكمية × السعر)</th>
+                        <th class="px-4 py-3 text-right font-semibold">إجمالي الشهر</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                    @foreach (var c in grp.OrderBy(x => x.CustomerName))
+                    {
+                        var receipts = receiptsByCard.TryGetValue(c.CardId, out var rr) ? rr : new List<moa.Models.PrintMonthlyReceiptVm>();
+                        decimal total = 0m;
+                        var itemsAgg = new Dictionary<string, decimal[]>();
+
+                        foreach (var r in receipts)
+                        {
+                            if (!linesByReceipt.TryGetValue(r.ReceiptId, out var ll)) continue;
+                            foreach (var l in ll)
+                            {
+                                var qty = l.Quantity;
+                                var price = l.UnitPrice ?? (qty == 0 ? 0m : (l.LineTotal / qty));
+
+                                if (!itemsAgg.TryGetValue(l.ProductName, out var agg))
+                                {
+                                    agg = new decimal[3];
+                                    itemsAgg[l.ProductName] = agg;
+                                }
+
+                                agg[0] += qty; // qty
+                                agg[1] += l.LineTotal; // total
+                                agg[2] += price * qty; // weighted price numerator
+                                total += l.LineTotal;
+                            }
+                        }
+
+                        <tr>
+                            <td class="px-4 py-3">@c.CustomerName</td>
+                            <td class="px-4 py-3 font-mono">@c.CardNumber</td>
+                            <td class="px-4 py-3 font-mono">@(c.GroupName == "بدون مجموعة" ? (string.IsNullOrWhiteSpace(c.Phone) ? "—" : c.Phone) : "—")</td>
+                            <td class="px-4 py-3 text-slate-700">
+                                @if (itemsAgg.Count == 0)
+                                {
+                                    <span>—</span>
+                                }
+                                else
+                                {
+                                    <div class="space-y-1">
+                                        @foreach (var kv in itemsAgg.OrderBy(x => x.Key))
+                                        {
+                                            var qty = kv.Value[0];
+                                            var lineTotal = kv.Value[1];
+                                            var unitPrice = qty == 0 ? 0m : (kv.Value[2] / qty);
+
+                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                <span class="font-semibold">@kv.Key</span>
+                                                <span class="text-slate-500">:</span>
+                                                <span class="font-mono">@qty</span>
+                                                <span class="text-slate-500">×</span>
+                                                <span class="font-mono">@unitPrice</span>
+                                                <span class="text-slate-500">=</span>
+                                                <span class="font-mono">@lineTotal</span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                            <td class="px-4 py-3 font-semibold">@total</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+</body>
+</html>

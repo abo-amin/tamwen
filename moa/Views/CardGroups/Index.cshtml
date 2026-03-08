@@ -1,0 +1,136 @@
+@model moa.Models.CardGroupsIndexViewModel
+@{
+    ViewData["Title"] = "مجموعات البطاقات";
+}
+
+<div class="mx-auto max-w-6xl space-y-6">
+    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">مجموعات البطاقات</h1>
+            <p class="text-sm text-slate-500">أنشئ مجموعات ثم اسند كل بطاقة لمجموعة واحدة.</p>
+        </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form asp-action="Create" method="post" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="flex-1">
+                <label class="mb-1 block text-sm font-semibold text-slate-700">اسم المجموعة</label>
+                <input name="NewGroupName" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+            </div>
+            <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">إضافة مجموعة</button>
+        </form>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-6 py-4">
+                <h2 class="text-sm font-bold text-slate-700">المجموعات</h2>
+            </div>
+            @if (Model.Groups.Count == 0)
+            {
+                <div class="px-6 py-8 text-sm text-slate-500">لا توجد مجموعات.</div>
+            }
+            else
+            {
+                <div class="divide-y divide-slate-100">
+                    @foreach (var g in Model.Groups)
+                    {
+                        <div class="flex items-center justify-between gap-3 px-6 py-4">
+                            <div>
+                                <a asp-controller="CardGroups" asp-action="Details" asp-route-id="@g.CardGroupId"
+                                   class="text-sm font-semibold text-slate-900 hover:text-indigo-600 transition-colors">
+                                    @g.GroupName
+                                </a>
+                                <div class="mt-1 text-xs text-slate-500">عدد البطاقات: @g.CardsCount</div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a asp-controller="CardGroups" asp-action="Details" asp-route-id="@g.CardGroupId"
+                                   class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors">
+                                    عرض
+                                </a>
+                                <form asp-action="Delete" method="post" class="m-0">
+                                    <input type="hidden" name="CardGroupId" value="@g.CardGroupId" />
+                                    <button type="submit" class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100">حذف</button>
+                                </form>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-slate-700">إسناد البطاقات</h2>
+                <span class="text-xs text-slate-400">@Model.Cards.Count بطاقة</span>
+            </div>
+
+            @if (!Model.Cards.Any())
+            {
+                <div class="px-6 py-8 text-sm text-slate-500">لا توجد بطاقات.</div>
+            }
+            else
+            {
+                <div class="divide-y divide-slate-100">
+                    @foreach (var c in Model.Cards)
+                    {
+                        <div class="p-4">
+                            <div class="flex items-start gap-3">
+                                <span class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 text-sm font-bold">
+                                    @(c.CustomerName.Length > 0 ? c.CustomerName[0].ToString() : "؟")
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-semibold text-slate-800">@c.CustomerName</p>
+                                    <p class="mt-0.5 font-mono text-xs text-slate-400">@c.CardNumber</p>
+                                    @if (!string.IsNullOrWhiteSpace(c.Phone))
+                                    {
+                                        <p class="mt-0.5 text-xs text-slate-400">@c.Phone</p>
+                                    }
+                                    <div class="mt-2.5 flex flex-wrap items-center gap-2">
+                                        <form asp-action="Assign" method="post" class="flex items-center gap-2 flex-wrap">
+                                            <input type="hidden" name="CardId" value="@c.CardId" />
+                                            <select name="CardGroupId"
+                                                    class="rounded-xl border border-slate-200 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-200 max-w-[160px]">
+                                                @foreach (var g in Model.Groups)
+                                                {
+                                                    <option value="@g.CardGroupId" selected="@(c.CardGroupId == g.CardGroupId)">@g.GroupName</option>
+                                                }
+                                            </select>
+                                            <button type="submit"
+                                                    class="rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 transition-colors">
+                                                إسناد
+                                            </button>
+                                        </form>
+                                        @if (c.CardGroupId is not null)
+                                        {
+                                            <form asp-action="Unassign" method="post" class="m-0">
+                                                <input type="hidden" name="cardId" value="@c.CardId" />
+                                                <button type="submit"
+                                                        class="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                                                    بدون مجموعة
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (c.CardGroupId is null && !string.IsNullOrWhiteSpace(c.Phone) == false)
+                                        {
+                                            <a asp-controller="Cards" asp-action="SetPhone" asp-route-id="@c.CardId"
+                                               class="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors">
+                                                إضافة هاتف
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -1,0 +1,56 @@
+@model moa.Models.MonthlyBalanceEditViewModel
+@{
+    ViewData["Title"] = "فتح رصيد شهري";
+}
+
+<div class="mx-auto max-w-2xl">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">فتح/تعديل رصيد شهري</h1>
+        <p class="text-sm text-slate-500">@Model.CustomerName - <span class="font-mono">@Model.CardNumber</span></p>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form asp-action="Edit" method="post" class="space-y-4">
+            <input type="hidden" asp-for="CardId" />
+            <input type="hidden" asp-for="CustomerName" />
+            <input type="hidden" asp-for="CardNumber" />
+
+            <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label asp-for="YearMonth" class="mb-1 block text-sm font-semibold text-slate-700">الشهر (YYYYMM)</label>
+                    <input asp-for="YearMonth" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="YearMonth" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+                <div>
+                    <label asp-for="MembersCountSnapshot" class="mb-1 block text-sm font-semibold text-slate-700">عدد الأفراد (Snapshot)</label>
+                    <input asp-for="MembersCountSnapshot" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="MembersCountSnapshot" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label asp-for="OpeningBalance" class="mb-1 block text-sm font-semibold text-slate-700">الرصيد</label>
+                    <input asp-for="OpeningBalance" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="OpeningBalance" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+                <div>
+                    <label asp-for="OpenAt" class="mb-1 block text-sm font-semibold text-slate-700">تاريخ الفتح</label>
+                    <input asp-for="OpenAt" type="datetime-local" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="OpenAt" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">حفظ</button>
+                <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-action="Index" asp-route-yearMonth="@Model.YearMonth">رجوع</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

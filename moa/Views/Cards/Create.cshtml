@@ -1,0 +1,87 @@
+@model moa.Models.CardCreateViewModel
+@{
+    ViewData["Title"] = "تسجيل بطاقة";
+}
+
+<div class="mx-auto max-w-2xl" x-data="{ members: @Model.MembersCount, price: @Model.PricePerPerson == 0 ? 50 : @Model.PricePerPerson, groupId: '@(Model.CardGroupId?.ToString() ?? "")' }">
+    <div class="mb-6 flex items-center gap-3">
+        <span class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm">
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M10 2a4 4 0 100 8 4 4 0 000-8z" />
+                <path fill-rule="evenodd" d="M2 16a6 6 0 1112 0v1H2v-1z" clip-rule="evenodd" />
+            </svg>
+        </span>
+        <div>
+            <h1 class="text-2xl font-bold">تسجيل بطاقة</h1>
+            <p class="text-sm text-slate-500">ادخل بيانات العميل والبطاقة.</p>
+        </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form asp-action="Create" method="post" class="space-y-4">
+            <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label asp-for="CustomerName" class="mb-1 block text-sm font-semibold text-slate-700">اسم صاحب البطاقة</label>
+                    <input asp-for="CustomerName" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="CustomerName" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="CardNumber" class="mb-1 block text-sm font-semibold text-slate-700">رقم البطاقة</label>
+                    <input asp-for="CardNumber" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="CardNumber" class="mt-1 block text-sm text-rose-600"></span>
+                    <div class="mt-1 text-xs text-slate-500">اختياري (سيتم توليده تلقائياً إذا تركته فارغاً)</div>
+                </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label asp-for="CardGroupId" class="mb-1 block text-sm font-semibold text-slate-700">المجموعة</label>
+                    <select asp-for="CardGroupId" asp-items="Model.CardGroups" x-model="groupId" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                        <option value="">بدون مجموعة</option>
+                    </select>
+                    <span asp-validation-for="CardGroupId" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div x-show="groupId === ''" x-cloak>
+                    <label asp-for="Phone" class="mb-1 block text-sm font-semibold text-slate-700">رقم التليفون</label>
+                    <input asp-for="Phone" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="Phone" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label asp-for="Pin" class="mb-1 block text-sm font-semibold text-slate-700">الرقم السري (4 أرقام)</label>
+                    <input asp-for="Pin" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="Pin" class="mt-1 block text-sm text-rose-600"></span>
+                    <div class="mt-1 text-xs text-slate-500">اختياري (سيتم توليده تلقائياً إذا تركته فارغاً)</div>
+                </div>
+
+                <div>
+                    <label asp-for="MembersCount" class="mb-1 block text-sm font-semibold text-slate-700">عدد الأفراد</label>
+                    <input asp-for="MembersCount" x-model.number="members" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="MembersCount" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="PricePerPerson" class="mb-1 block text-sm font-semibold text-slate-700">سعر الفرد في الشهر</label>
+                <input asp-for="PricePerPerson" x-model.number="price" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                <span asp-validation-for="PricePerPerson" class="mt-1 block text-sm text-rose-600"></span>
+                <div class="mt-2 text-xs text-slate-500">الرصيد المتوقع (للشهر الحالي): <span class="font-semibold" x-text="((Math.min((members||0),4) + Math.max((members||0)-4,0)*0.5) * (price||0))"></span></div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">حفظ</button>
+                <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-action="Search">بحث بالاسم</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

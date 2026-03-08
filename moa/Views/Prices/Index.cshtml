@@ -1,0 +1,84 @@
+@model moa.Models.UnifiedMonthlyPricesViewModel
+@{
+    ViewData["Title"] = "الأسعار";
+    var isWithdrawal = Model.PriceType == moa.Models.UiTabs.WithdrawalPrice;
+}
+
+<div class="mx-auto max-w-6xl">
+    <div class="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">الأسعار</h1>
+            <p class="text-sm text-slate-500">حدد شهر ثم ادخل الأسعار. اختر نوع السعر من التبويبات.</p>
+        </div>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <form method="get" class="flex items-center gap-2" asp-controller="Prices" asp-action="Index">
+                <input type="hidden" name="type" value="@Model.PriceType" />
+                <input name="yearMonth" value="@Model.YearMonth" class="w-40 rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" placeholder="YYYYMM" />
+                <button type="submit" class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">عرض</button>
+            </form>
+
+            <form asp-controller="Prices" asp-action="CopyFromPrevious" method="post">
+                <input type="hidden" name="yearMonth" value="@Model.YearMonth" />
+                <input type="hidden" name="priceType" value="@Model.PriceType" />
+                <button type="submit" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50">نسخ من الشهر السابق</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mb-4 flex items-center gap-2">
+        <a asp-controller="Prices" asp-action="Index" asp-route-yearMonth="@Model.YearMonth" asp-route-type="@moa.Models.UiTabs.WithdrawalPrice"
+           class="rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm @(isWithdrawal ? "bg-indigo-600 text-white" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50")">سعر السحب</a>
+
+        <a asp-controller="Prices" asp-action="Index" asp-route-yearMonth="@Model.YearMonth" asp-route-type="@moa.Models.UiTabs.FreeSalePrice"
+           class="rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm @(!isWithdrawal ? "bg-indigo-600 text-white" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50")">سعر البيع الحر</a>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form asp-controller="Prices" asp-action="Save" method="post" class="space-y-4">
+            <input type="hidden" asp-for="YearMonth" />
+            <input type="hidden" asp-for="PriceType" />
+
+            <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="px-6 py-3 text-right font-semibold">المنتج</th>
+                        <th class="px-6 py-3 text-right font-semibold">الوحدة</th>
+                        <th class="px-6 py-3 text-right font-semibold">السعر</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                    @for (var i = 0; i < Model.Rows.Count; i++)
+                    {
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-4">
+                                @Model.Rows[i].ProductName
+                                <input type="hidden" asp-for="Rows[i].ProductId" />
+                                <input type="hidden" asp-for="Rows[i].ProductName" />
+                                <input type="hidden" asp-for="Rows[i].UnitName" />
+                            </td>
+                            <td class="px-6 py-4">@Model.Rows[i].UnitName</td>
+                            <td class="px-6 py-4">
+                                <input asp-for="Rows[i].UnitPrice" class="w-40 rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                                <span asp-validation-for="Rows[i].UnitPrice" class="mt-1 block text-sm text-rose-600"></span>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">حفظ الأسعار</button>
+                <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-controller="Home" asp-action="Index">رجوع</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

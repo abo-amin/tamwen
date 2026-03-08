@@ -1,0 +1,59 @@
+@model moa.Models.ReceiptDetailsViewModel
+@{
+    ViewData["Title"] = "تفاصيل السحب";
+}
+
+<div class="mx-auto max-w-4xl">
+    <div class="mb-6 flex items-center justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-bold">تفاصيل السحب</h1>
+            <p class="text-sm text-slate-500">رقم الإيصال: @Model.ReceiptId</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-controller="Receipts" asp-action="Index">سجل السحوبات</a>
+            <a class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700" asp-controller="Receipts" asp-action="Create">سحب جديد</a>
+        </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="grid gap-3 md:grid-cols-2">
+            <div class="text-sm"><span class="font-semibold">العميل:</span> @Model.CustomerName</div>
+            <div class="text-sm"><span class="font-semibold">البطاقة:</span> <span class="font-mono">@Model.CardNumber</span></div>
+            <div class="text-sm"><span class="font-semibold">التاريخ:</span> @Model.WithdrawnAt</div>
+            <div class="text-sm"><span class="font-semibold">الإجمالي:</span> @Model.TotalAmount</div>
+        </div>
+    </div>
+
+    <div class="mt-6 rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-6 py-4">
+            <h2 class="text-sm font-bold text-slate-700">توزيع الخصم (FIFO)</h2>
+        </div>
+
+        @if (Model.Allocations.Count == 0)
+        {
+            <div class="px-6 py-8 text-sm text-slate-500">لا يوجد توزيع.</div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="px-6 py-3 text-right font-semibold">الشهر</th>
+                        <th class="px-6 py-3 text-right font-semibold">المبلغ</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                    @foreach (var a in Model.Allocations)
+                    {
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-6 py-4 font-mono">@a.YearMonth</td>
+                            <td class="px-6 py-4">@a.AllocatedAmount</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

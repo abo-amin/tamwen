@@ -1,0 +1,152 @@
+@model moa.Models.CardBatchCreateViewModel
+@{
+    ViewData["Title"] = "إضافة بطاقات";
+}
+
+<div class="mx-auto max-w-6xl">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold">@ViewData["Title"]</h1>
+            <div class="mt-1 text-sm text-slate-600">الفرن الحالي: <span class="font-semibold">@Model.StoreName</span></div>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-semibold text-slate-700">الفرن:</label>
+                <select asp-for="StoreId" asp-items="Model.Stores" onchange="window.location.href='?storeId=' + this.value" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                </select>
+            </div>
+            <div class="flex items-center gap-3">
+                <label class="text-sm font-semibold text-slate-700">المجموعة:</label>
+                <select asp-for="CardGroupId" onchange="window.location.href='?storeId=@Model.StoreId&groupId=' + this.value" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                    <option value="">-- الكل --</option>
+                    @foreach (var g in Model.CardGroups)
+                    {
+                        @if (Model.CardGroupId.ToString() == g.Value)
+                        {
+                            <option value="@g.Value" selected>@g.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@g.Value">@g.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] is not null)
+    {
+        <div class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">@TempData["Success"]</div>
+    }
+    @if (TempData["Info"] is not null)
+    {
+        <div class="mb-4 rounded-2xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">@TempData["Info"]</div>
+    }
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <h2 class="text-lg font-bold text-slate-800">إضافة بطاقات وتدقيق البيانات</h2>
+            @if (Model.CardGroupId.HasValue)
+            {
+                <form asp-action="CleanupGroupDuplicates" method="post" onsubmit="return confirm('هل أنت متأكد من رغبتك في حذف الأسماء المكررة في هذه المجموعة؟ سيتم حذف البطاقات التي لم تقم بأي عمليات صرف فقط.')">
+                    <input type="hidden" name="storeId" value="@Model.StoreId" />
+                    <input type="hidden" name="groupId" value="@Model.CardGroupId" />
+                    <button type="submit" class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 shadow-sm hover:bg-rose-100">
+                        <i class="fas fa-magic ml-1"></i> تنظيف التكرارات في هذه المجموعة
+                    </button>
+                </form>
+            }
+        </div>
+        <form asp-action="BatchCreate" method="post" class="space-y-4">
+            <input type="hidden" asp-for="StoreId" />
+            <input type="hidden" asp-for="CardGroupId" />
+            <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+            <div class="grid gap-6 lg:grid-cols-2">
+                <div>
+                    <div class="mb-2 text-sm font-semibold text-slate-700">البطاقات الحالية</div>
+                    <div class="max-h-[520px] overflow-auto rounded-2xl border border-slate-200">
+                        <table class="min-w-full divide-y divide-slate-200 text-sm">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-right font-semibold text-slate-700">الاسم</th>
+                                    <th class="px-3 py-2 text-right font-semibold text-slate-700">عدد الأفراد</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                @if (Model.ExistingCards.Count == 0)
+                                {
+                                    <tr>
+                                        <td class="px-3 py-3 text-slate-500" colspan="2">لا توجد بطاقات</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var c in Model.ExistingCards)
+                                    {
+                                        <tr>
+                                            <td class="px-3 py-2">@c.CustomerName</td>
+                                            <td class="px-3 py-2">@c.MembersCount</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="mb-2 text-sm font-semibold text-slate-700">إضافة 20 بطاقة</div>
+                    <div class="rounded-2xl border border-slate-200">
+                        <table class="min-w-full divide-y divide-slate-200 text-sm">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-right font-semibold text-slate-700">#</th>
+                                    <th class="px-3 py-2 text-right font-semibold text-slate-700">اسم صاحب البطاقة</th>
+                                    <th class="px-3 py-2 text-right font-semibold text-slate-700">عدد الأفراد</th>
+                                    <th class="px-3 py-2 text-right font-semibold text-slate-700">تأكيد</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                @for (var i = 0; i < Model.Rows.Count; i++)
+                                {
+                                    var hasDuplicateError = ViewData.ModelState[$"Rows[{i}].CustomerName"]?.Errors.Any(e => e.ErrorMessage.Contains("بالفعل") || e.ErrorMessage.Contains("مكرر")) ?? false;
+                                    <tr class="@(hasDuplicateError ? "bg-amber-50" : "")">
+                                        <td class="px-3 py-2 text-slate-500">@(i + 1)</td>
+                                        <td class="px-3 py-2">
+                                            <input asp-for="Rows[i].CustomerName" class="w-full rounded-xl border @(hasDuplicateError ? "border-amber-400" : "border-slate-200") px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                                            <span asp-validation-for="Rows[i].CustomerName" class="mt-1 block text-xs text-rose-600"></span>
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input asp-for="Rows[i].MembersCount" class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                                            <span asp-validation-for="Rows[i].MembersCount" class="mt-1 block text-xs text-rose-600"></span>
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            @if (hasDuplicateError || Model.Rows[i].IsConfirmedDuplicate)
+                                            {
+                                                <div class="flex items-center justify-center gap-1 group">
+                                                    <input asp-for="Rows[i].IsConfirmedDuplicate" class="h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500" />
+                                                    <label asp-for="Rows[i].IsConfirmedDuplicate" class="text-[10px] font-bold text-amber-700">تأكيد</label>
+                                                </div>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 flex items-center gap-3">
+                        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">حفظ</button>
+                        <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-action="Search">بحث بالاسم</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,10 @@
+﻿124: var swipeBalances = await _db.CardMonthlyBalances
+130: swipeBalances.TryGetValue(c.CardId, out var swiped);
+224: var swipeBalances = await _db.CardMonthlyBalances
+230: swipeBalances.TryGetValue(c.CardId, out var swiped);
+323: // Load monthly balances ordered by oldest first
+324: var balances = await _db.CardMonthlyBalances
+330: if (balances.Count == 0)
+336: var balanceIds = balances.Select(b => b.CardMonthlyBalanceId).ToList();
+343: var available = balances
+613: _db.CardMonthlyBalances.AsNoTracking(),

@@ -1,0 +1,196 @@
+@model moa.Models.CardGroupDetailsVm
+
+@{
+    ViewData["Title"] = "مجموعة " + Model.GroupName;
+}
+
+<div class="space-y-6">
+
+    
+    <nav class="flex items-center gap-2 text-sm text-slate-500" aria-label="مسار التنقل">
+        <a asp-controller="Home" asp-action="Index" class="hover:text-indigo-600 transition-colors">الرئيسية</a>
+        <svg class="h-4 w-4 rotate-180" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <a asp-controller="CardGroups" asp-action="Index" class="hover:text-indigo-600 transition-colors">مجموعات البطاقات</a>
+        <svg class="h-4 w-4 rotate-180" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="font-medium text-slate-700">@Model.GroupName</span>
+    </nav>
+
+    
+    <div class="relative overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-bl from-indigo-600 via-indigo-500 to-violet-500 p-6 text-white shadow-xl">
+        <div class="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+        <div class="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
+        <div class="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-4">
+                <div class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold backdrop-blur-sm shadow-md">
+                    @(Model.GroupName.Length > 0 ? Model.GroupName[0].ToString() : "م")
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold leading-tight">@Model.GroupName</h1>
+                    <p class="mt-0.5 text-indigo-100 text-sm">
+                        أُنشئت في @Model.CreatedAt.ToString("dd/MM/yyyy")
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="rounded-2xl bg-white/20 px-5 py-2.5 text-center backdrop-blur-sm">
+                    <div class="text-3xl font-extrabold leading-none">@Model.Cards.Count</div>
+                    <div class="mt-0.5 text-xs font-medium text-indigo-100">بطاقة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+
+        
+        <div class="flex flex-col gap-3 border-b border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-800">بطاقات المجموعة</h2>
+                <p class="mt-0.5 text-xs text-slate-400">إجمالي @Model.Cards.Count بطاقة مسجّلة في هذه المجموعة</p>
+            </div>
+            <a asp-controller="CardGroups" asp-action="Index"
+               class="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                رجوع للمجموعات
+            </a>
+        </div>
+
+        @if (!Model.Cards.Any())
+        {
+            <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+                <svg class="h-14 w-14 mb-3 opacity-40" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 12a4 4 0 1 0 0.001-8.001A4 4 0 0 0 12 12Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <p class="text-sm font-medium">لا توجد بطاقات في هذه المجموعة بعد</p>
+                <a asp-controller="CardGroups" asp-action="Index"
+                   class="mt-4 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+                    إضافة بطاقات للمجموعة
+                </a>
+            </div>
+        }
+        else
+        {
+            
+            <div class="hidden sm:block overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-100 bg-slate-50/60 text-xs font-bold text-slate-500">
+                            <th class="px-6 py-3 text-right">#</th>
+                            <th class="px-6 py-3 text-right">الاسم</th>
+                            <th class="px-6 py-3 text-right">رقم البطاقة</th>
+                            <th class="px-6 py-3 text-right">رقم الهاتف</th>
+                            <th class="px-6 py-3 text-right">في الماكينة</th>
+                            <th class="px-6 py-3 text-right">حالة السحب</th>
+                            <th class="px-6 py-3 text-right">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @{ int row = 0; }
+                        @foreach (var card in Model.Cards)
+                        {
+                            row++;
+                            <tr class="group hover:bg-indigo-50/40 transition-colors">
+                                <td class="px-6 py-4 text-slate-400 font-medium text-xs">@row</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 text-xs font-bold">
+                                            @(card.CustomerName.Length > 0 ? card.CustomerName[0].ToString() : "؟")
+                                        </span>
+                                        <span class="font-semibold text-slate-800">@card.CustomerName</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs font-medium text-slate-700">@card.CardNumber</span>
+                                </td>
+                                <td class="px-6 py-4 text-slate-600 text-xs">
+                                    @(string.IsNullOrWhiteSpace(card.Phone) ? "—" : card.Phone)
+                                </td>
+                                <td class="px-6 py-4" x-data="{ isSwiped: @(card.IsSwipedInMachine.ToString().ToLower()) }">
+                                    <button type="button" 
+                                            class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors"
+                                            :class="isSwiped ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'"
+                                            x-on:click="isSwiped = !isSwiped; fetch('/CardGroups/ToggleSwipeStatus', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value }, body: new URLSearchParams({ cardId: @card.CardId, isSwiped: isSwiped }) })">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="2" y="5" width="20" height="14" rx="2" ry="2"/>
+                                            <line x1="2" y1="10" x2="22" y2="10"/>
+                                        </svg>
+                                        <span x-text="isSwiped ? 'انضربت' : 'لأ'"></span>
+                                    </button>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if (card.HasWithdrawnThisMonth)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            تم السحب
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-15v6l5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                            لم يتم السحب
+                                        </span>
+                                    }
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a asp-controller="Cards" asp-action="Details" asp-route-id="@card.CardId"
+                                       class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+                                        عرض
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            
+            <div class="sm:hidden divide-y divide-slate-100">
+                @foreach (var card in Model.Cards)
+                {
+                    <div class="flex items-center gap-3 px-4 py-3.5">
+                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 text-sm font-bold">
+                            @(card.CustomerName.Length > 0 ? card.CustomerName[0].ToString() : "؟")
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-semibold text-slate-800">@card.CustomerName</p>
+                            <p class="mt-0.5 text-xs text-slate-400">@card.CardNumber</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5" x-data="{ isSwiped: @(card.IsSwipedInMachine.ToString().ToLower()) }">
+                            <button type="button" 
+                                    class="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold transition-colors"
+                                    :class="isSwiped ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'"
+                                    x-on:click="isSwiped = !isSwiped; fetch('/CardGroups/ToggleSwipeStatus', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value }, body: new URLSearchParams({ cardId: @card.CardId, isSwiped: isSwiped }) })">
+                                <span x-text="isSwiped ? '💳 ماكينة: نعم' : '💳 ماكينة: لا'"></span>
+                            </button>
+                            @if (card.HasWithdrawnThisMonth)
+                            {
+                                <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                    تم السحب
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+                                    لم يسحب
+                                </span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(card.Phone))
+                            {
+                                <span class="text-[10px] text-slate-500 font-mono">@card.Phone</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+</div>
+
+@Html.AntiForgeryToken()
+

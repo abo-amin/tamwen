@@ -1,0 +1,61 @@
+@model moa.Models.ProductFormViewModel
+@{
+    ViewData["Title"] = "إضافة منتج";
+}
+
+<div class="mx-auto max-w-2xl">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">إضافة منتج</h1>
+        <p class="text-sm text-slate-500">أضف منتج جديد للمحل.</p>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form asp-action="Create" method="post" class="space-y-4">
+            <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+            <div>
+                <label asp-for="ProductName" class="mb-1 block text-sm font-semibold text-slate-700">اسم المنتج</label>
+                <input asp-for="ProductName" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                <span asp-validation-for="ProductName" class="mt-1 block text-sm text-rose-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="UnitName" class="mb-1 block text-sm font-semibold text-slate-700">وحدة القياس</label>
+                <input asp-for="UnitName" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" placeholder="مثال: كجم / علبة / قطعة" />
+                <span asp-validation-for="UnitName" class="mt-1 block text-sm text-rose-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="UnitPrice" class="mb-1 block text-sm font-semibold text-slate-700">السعر</label>
+                <input asp-for="UnitPrice" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                <span asp-validation-for="UnitPrice" class="mt-1 block text-sm text-rose-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="QuantityOnHand" class="mb-1 block text-sm font-semibold text-slate-700">الكمية بالمخزن</label>
+                <input asp-for="QuantityOnHand" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                <span asp-validation-for="QuantityOnHand" class="mt-1 block text-sm text-rose-600"></span>
+            </div>
+
+            <div>
+                <label asp-for="LastRestockQuantity" class="mb-1 block text-sm font-semibold text-slate-700">آخر كمية دخلت المخزن</label>
+                <input asp-for="LastRestockQuantity" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                <span asp-validation-for="LastRestockQuantity" class="mt-1 block text-sm text-rose-600"></span>
+            </div>
+
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input asp-for="IsActive" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                مفعل
+            </label>
+
+            <div class="flex items-center gap-3">
+                <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">حفظ</button>
+                <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-action="Index">رجوع</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

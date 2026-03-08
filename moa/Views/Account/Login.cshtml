@@ -1,0 +1,51 @@
+@model moa.Models.LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+
+<div class="mx-auto max-w-md">
+    <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-indigo-600 via-fuchsia-600 to-rose-500"></div>
+        <div class="p-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold">تسجيل الدخول</h1>
+                <p class="mt-1 text-sm text-slate-500">ادخل بريدك الإلكتروني وكلمة المرور.</p>
+            </div>
+
+            <form asp-action="Login" method="post" class="space-y-4">
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                <div asp-validation-summary="All" class="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
+
+                <div>
+                    <label asp-for="Email" class="mb-1 block text-sm font-semibold text-slate-700">البريد الإلكتروني</label>
+                    <input asp-for="Email" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="Email" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Password" class="mb-1 block text-sm font-semibold text-slate-700">كلمة المرور</label>
+                    <input asp-for="Password" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                    <span asp-validation-for="Password" class="mt-1 block text-sm text-rose-600"></span>
+                </div>
+
+                <label class="flex items-center gap-2 text-sm text-slate-600">
+                    <input asp-for="RememberMe" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
+                    تذكرني
+                </label>
+
+                <button type="submit" class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">دخول</button>
+            </form>
+
+            <div class="mt-6 text-sm text-slate-600">
+                ليس لديك حساب؟
+                <a class="font-semibold text-indigo-700 hover:underline" asp-controller="Account" asp-action="Register">حساب جديد</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

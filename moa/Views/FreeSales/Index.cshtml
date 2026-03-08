@@ -1,0 +1,87 @@
+@model moa.Models.FreeSaleListViewModel
+@{
+    ViewData["Title"] = "سجل البيع الحر";
+}
+
+<div class="mx-auto max-w-6xl">
+    <div class="mb-6 flex items-center justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-bold">سجل البيع الحر</h1>
+            <p class="text-sm text-slate-500">فلتر البيع الحر حسب الشهر.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+               asp-controller="FreeSales" asp-action="Create">بيع حر جديد</a>
+        </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form method="get" class="grid gap-3 md:grid-cols-3">
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">السنة</label>
+                <input class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" type="number" name="Year" value="@Model.Filter.Year" placeholder="2026" />
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">الشهر</label>
+                <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" name="Month">
+                    <option value="">كل الشهور</option>
+                    @for (var m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(Model.Filter.Month == m)">شهر @m</option>
+                    }
+                </select>
+            </div>
+
+            <div class="md:col-span-3 flex items-center gap-3">
+                <button class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800" type="submit">تطبيق</button>
+                <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-action="Index">مسح الفلاتر</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 space-y-4">
+        @if (Model.Items.Count == 0)
+        {
+            <div class="rounded-3xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500 shadow-sm">لا توجد فواتير.</div>
+        }
+        else
+        {
+            <div class="rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 text-slate-600">
+                        <tr>
+                            <th class="px-6 py-3 text-right font-semibold">التاريخ</th>
+                            <th class="px-6 py-3 text-right font-semibold">المنتجات (الكمية × السعر)</th>
+                            <th class="px-6 py-3 text-right font-semibold">الإجمالي</th>
+                            <th class="px-6 py-3"></th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                        @foreach (var r in Model.Items)
+                        {
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-6 py-4 whitespace-nowrap">@r.SoldAt</td>
+                                <td class="px-6 py-4">
+                                    @if (!string.IsNullOrWhiteSpace(r.ItemsSummary))
+                                    {
+                                        <div class="text-slate-700">@r.ItemsSummary</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-slate-400">—</div>
+                                    }
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap font-semibold">@r.TotalAmount</td>
+                                <td class="px-6 py-4 text-left whitespace-nowrap">
+                                    <a class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700" asp-action="Details" asp-route-id="@r.FreeSaleReceiptId">تفاصيل</a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

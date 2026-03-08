@@ -1,0 +1,83 @@
+@model moa.Models.CardDetailsViewModel
+@{
+    ViewData["Title"] = "Card Details";
+}
+
+<h1>Card Details</h1>
+
+<div class="mb-3">
+    <div><strong>Name:</strong> @Model.CustomerName</div>
+    <div><strong>Card Number:</strong> @Model.CardNumber</div>
+    <div><strong>Members:</strong> @Model.MembersCount</div>
+    <div><strong>Phone:</strong> @(string.IsNullOrWhiteSpace(Model.Phone) ? "—" : Model.Phone)</div>
+</div>
+
+@if (Model.CardGroupId is null)
+{
+    <div class="mb-3">
+        <a class="btn btn-primary" asp-action="SetPhone" asp-route-id="@Model.CardId">@(string.IsNullOrWhiteSpace(Model.Phone) ? "إضافة رقم التليفون" : "تعديل رقم التليفون")</a>
+    </div>
+}
+
+<h3>Balances</h3>
+
+@if (Model.Balances.Count == 0)
+{
+    <p>No monthly balances found for this card.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>YearMonth</th>
+            <th>Opening</th>
+            <th>Spent</th>
+            <th>Remaining</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var b in Model.Balances)
+        {
+            var highlight = b.Remaining <= Model.NearEmptyThresholdAmount && b.Remaining > 0;
+            <tr class="@(highlight ? "table-warning" : "")">
+                <td>@b.YearMonth</td>
+                <td>@b.OpeningBalance</td>
+                <td>@b.Spent</td>
+                <td>@b.Remaining</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <div class="mt-2">
+        <small>Near-empty threshold: @Model.NearEmptyThresholdAmount</small>
+    </div>
+}
+
+@if (Model.CanOpenNextMonth)
+{
+    <hr />
+    <h3>Open Next Month</h3>
+    <form asp-action="OpenNextMonth" method="post">
+        <input type="hidden" asp-for="CardId" />
+
+        <div class="mb-3">
+            <label asp-for="NextYearMonth" class="form-label"></label>
+            <input asp-for="NextYearMonth" class="form-control" />
+            <span asp-validation-for="NextYearMonth" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NextOpeningBalance" class="form-label"></label>
+            <input asp-for="NextOpeningBalance" class="form-control" readonly />
+            <span asp-validation-for="NextOpeningBalance" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">Open Next Month Balance</button>
+    </form>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

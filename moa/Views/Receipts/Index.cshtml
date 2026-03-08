@@ -1,0 +1,113 @@
+@model moa.Models.ReceiptListViewModel
+@{
+    ViewData["Title"] = "سجل السحوبات";
+}
+
+<div class="mx-auto max-w-6xl">
+    <div class="mb-6 flex items-center justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-bold">سجل السحوبات</h1>
+            <p class="text-sm text-slate-500">فلتر السحوبات حسب الشهر أو البطاقة أو الاسم.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+               asp-action="PrintMonthly"
+               asp-route-yearMonth="@((Model.Filter.Year ?? DateTime.UtcNow.Year) * 100 + (Model.Filter.Month ?? DateTime.UtcNow.Month))"
+               target="_blank">طباعة جرد الشهر</a>
+            <a class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700" asp-action="Create">سحب جديد</a>
+        </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form method="get" class="grid gap-3 md:grid-cols-4">
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">السنة</label>
+                <input class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" type="number" name="Year" value="@Model.Filter.Year" placeholder="2026" />
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">الشهر</label>
+                <select class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" name="Month">
+                    <option value="">كل الشهور</option>
+                    @for (var m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(Model.Filter.Month == m)">شهر @m</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">رقم البطاقة</label>
+                <input class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" type="text" name="CardNumber" value="@Model.Filter.CardNumber" />
+            </div>
+            <div>
+                <label class="mb-1 block text-sm font-semibold text-slate-700">اسم العميل</label>
+                <input class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" type="text" name="CustomerName" value="@Model.Filter.CustomerName" />
+            </div>
+
+            <div class="md:col-span-4 flex items-center gap-3">
+                <button class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800" type="submit">تطبيق</button>
+                <a class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" asp-action="Index">مسح الفلاتر</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 space-y-4">
+        @if (Model.Items.Count == 0)
+        {
+            <div class="rounded-3xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500 shadow-sm">لا توجد سحوبات.</div>
+        }
+        else
+        {
+            @foreach (var g in Model.Items.GroupBy(x => new { x.CardId, x.CardNumber, x.CustomerName }).OrderBy(x => x.Key.CustomerName))
+            {
+                <div class="rounded-3xl border border-slate-200 bg-white shadow-sm" x-data="{ open: true }">
+                    <button type="button" class="flex w-full items-center justify-between gap-3 px-6 py-4" x-on:click="open = !open">
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-slate-900">@g.Key.CustomerName</div>
+                            <div class="mt-1 text-xs text-slate-500">رقم البطاقة: <span class="font-mono">@g.Key.CardNumber</span> | عدد السحوبات: @g.Count()</div>
+                        </div>
+                        <svg class="h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div x-cloak x-show="open" class="border-t border-slate-200">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th class="px-6 py-3 text-right font-semibold">التاريخ</th>
+                                    <th class="px-6 py-3 text-right font-semibold">المنتجات (الكمية × السعر)</th>
+                                    <th class="px-6 py-3 text-right font-semibold">الإجمالي</th>
+                                    <th class="px-6 py-3"></th>
+                                </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                @foreach (var r in g.OrderByDescending(x => x.WithdrawnAt))
+                                {
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">@r.WithdrawnAt</td>
+                                        <td class="px-6 py-4">
+                                            @if (!string.IsNullOrWhiteSpace(r.ItemsSummary))
+                                            {
+                                                <div class="text-slate-700">@r.ItemsSummary</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-slate-400">—</div>
+                                            }
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-semibold">@r.TotalAmount</td>
+                                        <td class="px-6 py-4 text-left whitespace-nowrap">
+                                            <a class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700" asp-action="Details" asp-route-id="@r.ReceiptId">تفاصيل</a>
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
