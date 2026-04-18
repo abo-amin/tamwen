@@ -20,16 +20,22 @@
     </script>
     <style>
         @@media print {
+            @@page { margin: 0.5cm; size: A4; }
             .no-print { display:none !important; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white; }
+            tbody tr, tbody td { height: 1.65cm !important; }
+            td { vertical-align: middle; }
         }
     </style>
 </head>
 <body class="bg-white text-slate-900">
-<div class="mx-auto max-w-6xl p-6">
+<div class="mx-auto max-w-6xl p-6 print:p-1 print:max-w-none print:m-0 w-full">
     <div class="no-print mb-4 flex items-center justify-between">
         <a class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50" href="javascript:window.close()">إغلاق</a>
-        <button class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700" onclick="window.print()">طباعة</button>
+        <div class="flex gap-2">
+            <button class="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700" onclick="exportToWord('جرد_الشهر.doc')">تصدير إلى Word</button>
+            <button class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700" onclick="window.print()">طباعة</button>
+        </div>
     </div>
 
     <div class="mb-6 rounded-2xl border border-slate-200 p-4">
@@ -60,22 +66,28 @@
 
     @foreach (var grp in cardsByGroup)
     {
-        <div class="mb-6 break-inside-avoid">
-            <div class="mb-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white">@grp.Key</div>
+        var orderedCards = grp.OrderBy(x => x.CustomerName.Trim(), StringComparer.Create(new System.Globalization.CultureInfo("ar-EG"), false)).ToList();
+        int index = 1;
 
+        <div class="mb-8">
             <div class="overflow-x-auto rounded-2xl border border-slate-200">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-50 text-slate-700">
+                <table class="w-full text-sm" style="page-break-inside: auto;">
+                <thead class="bg-slate-50 text-slate-700" style="display: table-header-group;">
                     <tr>
-                        <th class="px-4 py-3 text-right font-semibold">العميل</th>
-                        <th class="px-4 py-3 text-right font-semibold">رقم البطاقة</th>
-                        <th class="px-4 py-3 text-right font-semibold">التليفون</th>
-                        <th class="px-4 py-3 text-right font-semibold">المنصرف (المنتج: الكمية × السعر)</th>
-                        <th class="px-4 py-3 text-right font-semibold">إجمالي الشهر</th>
+                        <th colspan="5" class="text-center py-2 bg-white border-b border-slate-200">
+                            <span class="text-xl font-bold px-6 py-1 border-2 border-slate-300 rounded-full shadow-sm">@grp.Key</span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="px-2 py-4 text-right font-semibold text-base" style="width: 5%;">م</th>
+                        <th class="px-4 py-4 text-right font-semibold text-base" style="width: 20%;">العميل</th>
+                        <th class="px-4 py-4 text-right font-semibold text-base" style="width: 55%;">المنصرف</th>
+                        <th class="px-1 py-4 text-center font-semibold text-sm border-r border-slate-200 whitespace-nowrap" style="width: 10%;">تم الضرب</th>
+                        <th class="px-1 py-4 text-center font-semibold text-sm border-r border-slate-200 whitespace-nowrap" style="width: 10%;">التسليم</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                    @foreach (var c in grp.OrderBy(x => x.CustomerName))
+                    @foreach (var c in orderedCards)
                     {
                         var receipts = receiptsByCard.TryGetValue(c.CardId, out var rr) ? rr : new List<moa.Models.PrintMonthlyReceiptVm>();
                         decimal total = 0m;
@@ -102,38 +114,39 @@
                             }
                         }
 
-                        <tr>
-                            <td class="px-4 py-3">@c.CustomerName</td>
-                            <td class="px-4 py-3 font-mono">@c.CardNumber</td>
-                            <td class="px-4 py-3 font-mono">@(c.GroupName == "بدون مجموعة" ? (string.IsNullOrWhiteSpace(c.Phone) ? "—" : c.Phone) : "—")</td>
-                            <td class="px-4 py-3 text-slate-700">
+                        <tr style="page-break-inside: avoid;">
+                            <td class="px-4 py-4 text-slate-500 font-mono text-sm">@(index++)</td>
+                            <td class="px-4 py-4 font-bold text-slate-900 text-lg">@c.CustomerName</td>
+                            <td class="px-4 py-4 text-slate-700 text-sm">
                                 @if (itemsAgg.Count == 0)
                                 {
                                     <span>—</span>
                                 }
                                 else
                                 {
-                                    <div class="space-y-1">
+                                    <div class="flex flex-wrap gap-x-3 gap-y-2">
                                         @foreach (var kv in itemsAgg.OrderBy(x => x.Key))
                                         {
                                             var qty = kv.Value[0];
                                             var lineTotal = kv.Value[1];
                                             var unitPrice = qty == 0 ? 0m : (kv.Value[2] / qty);
 
-                                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                                <span class="font-semibold">@kv.Key</span>
+                                            <div class="flex items-center gap-x-1 text-sm whitespace-nowrap">
+                                                <span class="font-semibold text-slate-800">@kv.Key</span>
                                                 <span class="text-slate-500">:</span>
-                                                <span class="font-mono">@qty</span>
+                                                <span class="font-mono">@qty.ToString("0.##")</span>
                                                 <span class="text-slate-500">×</span>
-                                                <span class="font-mono">@unitPrice</span>
+                                                <span class="font-mono">@unitPrice.ToString("0.##")</span>
                                                 <span class="text-slate-500">=</span>
-                                                <span class="font-mono">@lineTotal</span>
+                                                <span class="font-mono">@lineTotal.ToString("0.##")</span>
                                             </div>
                                         }
                                     </div>
                                 }
                             </td>
-                            <td class="px-4 py-3 font-semibold">@total</td>
+
+                            <td class="px-4 py-4 text-center border-r border-slate-200"></td>
+                            <td class="px-4 py-4 text-center border-r border-slate-200"></td>
                         </tr>
                     }
                     </tbody>
@@ -141,6 +154,45 @@
             </div>
         </div>
     }
+
 </div>
+
+<script>
+function exportToWord(filename = 'document.doc') {
+    var preHtml = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset='utf-8'>
+    <title>Export HTML To Doc</title>
+    <style>
+        body { font-family: 'Cairo', sans-serif; direction: rtl; text-align: right; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; font-size: 14px; }
+        th, td { border: 1px solid #000; padding: 12px; text-align: right; }
+        th { background-color: #f3f4f6; font-weight: bold; font-size: 16px; }
+        .text-center { text-align: center; }
+        .break-after-page { page-break-after: always; }
+    </style>
+</head><body>
+`;
+    var postHtml = "</body></html>";
+    
+    var exportArea = document.querySelector('.mx-auto').cloneNode(true);
+    var noPrints = exportArea.querySelectorAll('.no-print');
+    noPrints.forEach(n => n.remove());
+    
+    var html = preHtml + exportArea.innerHTML + postHtml;
+
+    var blob = new Blob(['\\ufeff', html], { type: 'application/msword' });
+    var url = URL.createObjectURL(blob);
+    
+    var downloadLink = document.createElement("a");
+    downloadLink.href = url;
+    downloadLink.download = filename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(url);
+}
+</script>
 </body>
 </html>
